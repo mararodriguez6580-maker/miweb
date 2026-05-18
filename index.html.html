@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Web para la Gestión de Finanzas Personales</title>
+    <!-- Importación de Tipografía Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #2563EB;
+            --primary-light: #60A5FA;
+            --secondary: #0F172A;
+            --background: #F5F9FF;
+            --surface: #FFFFFF;
+            --text-primary: #0F172A;
+            --text-secondary: #64748B;
+            --text-muted: #94A3B8;
+            --success: #10B981;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+            --success-bg: #DCFCE7;
+            --danger-bg: #FEE2E2;
+            --warning-bg: #FEF3C7;
+            --radius-sm: 10px;
+            --radius-md: 18px;
+            --radius-lg: 28px;
+            --shadow: 0 10px 30px -8px rgba(15, 23, 42, 0.08);
+            --transition: all 0.25s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, .font-poppins {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Utilidades de visualización SPA */
+        .page {
+            display: none;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .page.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- PANTALLA 1 & 2: AUTENTICACIÓN --- */
+        .auth-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            padding: 20px;
+        }
+
+        .auth-card {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.2);
+            display: flex;
+            width: 900px;
+            max-width: 100%;
+            overflow: hidden;
+            min-height: 500px;
+        }
+
+        .auth-left {
+            flex: 1;
+            background: #EAF2FF;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .auth-left .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .auth-left h2 {
+            font-size: 32px;
+            color: var(--secondary);
+            line-height: 1.2;
+            margin-bottom: 15px;
+        }
+
+        .auth-right {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #E2E8F0;
+            background: #F8FAFC;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            background: var(--surface);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1D4ED8;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #EFF6FF;
+            color: var(--primary);
+            margin-top: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #DBEAFE;
+        }
+
+        .auth-links {
+            margin-top: 15px;
+            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+        }
+
+        .auth-links a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        /* --- ARQUITECTURA DE DASHBOARD MASTER-DETAIL --- */
+        .app-layout {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Fija */
+        .sidebar {
+            width: 260px;
+            background: var(--secondary);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-brand {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 32px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex-grow: 1;
+        }
+
+        .sidebar-item a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .sidebar-item.active a, .sidebar-item a:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-item.active a {
+            background: var(--primary);
+        }
+
+        /* Contenedor de contenido de la App */
+        .main-wrapper {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Navbar superior */
+        .navbar {
+            height: 70px;
+            background: var(--surface);
+            border-bottom: 1px solid #E2E8F0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            flex-shrink: 0;
+        }
+
+        .search-box {
+            position: relative;
+            width: 300px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 16px;
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 20px;
+            outline: none;
+            font-size: 13px;
+        }
+
+        .nav-profile {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .notification-bell {
+            position: relative;
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background: var(--danger);
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .user-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        /* Área de Trabajo de Vistas */
+        .content-body {
+            flex-grow: 1;
+            padding: 32px;
+            overflow-y: auto;
+            background: var(--background);
+        }
+
+        .view-section {
+            display: none;
+            flex-direction: column;
+            gap: 24px;
+            width: 100%;
+        }
+
+        .view-section.active {
+            display: flex;
+        }
+
+        /* Estructuras Atómicas: Tarjetas Inteligentes */
+        .card {
+            background: var(--surface);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow);
+            padding: 24px;
+            border: 1px solid rgba(226, 232, 240, 0.5);
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 24px;
+        }
+
+        /* KPI Cards */
+        .kpi-card {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .kpi-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .kpi-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .kpi-indicator {
+            align-self: flex-start;
+            padding: 4px 8px;
+            border-radius: var(--radius-sm);
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .indicator-positive { background: var(--success-bg); color: var(--success); }
+        .indicator-negative { background: var(--danger-bg); color: var(--danger); }
+        .indicator-neutral { background: var(--warning-bg); color: var(--warning); }
+
+        /* Simulación de Tablas / Filas de Movimiento */
+        .list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .list-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            background: var(--surface);
+            border-radius: var(--radius-sm);
+            border-left: 4px solid var(--primary);
+            transition: var(--transition);
+        }
+
+        .list-row:hover {
+            transform: translateX(4px);
+        }
+
+        /* --- COMPONENTES DE VISTAS ESPECÍFICAS --- */
+        /* Gráficas Mockeadas en Puro CSS */
+        .mock-chart-container {
+            height: 200px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            padding-top: 20px;
+            border-bottom: 2px solid #E2E8F0;
+        }
+
+        .mock-bar {
+            width: 12%;
+            background: linear-gradient(to top, var(--primary), var(--primary-light));
+            border-top-left-radius: 6px;
+            border-top-right-radius: 6px;
+            position: relative;
+            min-height: 10px;
+            transition: var(--transition);
+        }
+
+        .mock-bar-secondary {
+            background: linear-gradient(to top, var(--text-secondary), var(--text-muted));
+        }
+
+        .mock-bar::after {
+            content: attr(data-value);
+            position: absolute;
+            top: -24px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        /* Barras de Progreso Metas */
+        .progress-wrapper {
+            margin-top: 15px;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 8px;
+            background: #E2E8F0;
+            border-radius: var(--radius-pill);
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--success);
+            width: 0%;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Tarjetas de Educación Educativa */
+        .edu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .edu-card {
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .edu-banner {
+            height: 120px;
+            background: linear-gradient(45deg, #EFF6FF, #DBEAFE);
+            border-radius: var(--radius-sm);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+
+        /* Foro de Comunidad */
+        .post-card {
+            border-bottom: 1px solid #E2E8F0;
+            padding-bottom: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .post-card:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+            margin-bottom: 0;
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        /* Alertas Inteligentes */
+        .alert-toast {
+            padding: 16px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+
+        .alert-yellow { background-color: var(--warning-bg); border-left: 5px solid var(--warning); color: #92400E; }
+        .alert-green { background-color: var(--success-bg); border-left: 5px solid var(--success); color: #065F46; }
+        .alert-red { background-color: var(--danger-bg); border-left: 5px solid var(--danger); color: #991B1B; }
+
+        /* Responsive Design */
+        @media (max-width: 900px) {
+            .auth-card { flex-direction: column; }
+            .auth-left { display: none; }
+            .sidebar { width: 70px; padding: 15px 10px; }
+            .sidebar-brand span, .sidebar-item span { display: none; }
+            .navbar { padding: 0 16px; }
+            .search-box { width: 150px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ========================================== -->
+    <!-- CONTENEDOR SPA NATIVO: CONTROL DE ACCESO     -->
+    <!-- ========================================== -->
+    <div id="auth-flow" class="page active">
+        <!-- VISTA: LOGIN -->
+        <div id="view-login" class="auth-container">
+            <div class="auth-card">
+                <div class="auth-left">
+                    <div class="logo">💰 FinanzasApp</div>
+                    <h2>Controla tu dinero, mejora tu futuro.</h2>
+                </div>
+                <div class="auth-right">
+                    <h3 style="margin-bottom: 24px; font-size: 24px;">Iniciar Sesión</h3>
+                    <form id="form-login" onsubmit="event.preventDefault(); authLogin();">
+                        <div class="form-group">
+                            <label>Correo electrónico</label>
+                            <input type="email" class="form-control" placeholder="ejemplo@correo.com" required value="demo@cucei.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Contraseña</label>
+                            <input type="password" class="form-control" placeholder="••••••••" required value="123456">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Ingresar al Sistema</button>
+                        <button type="button" class="btn btn-secondary" onclick="switchAuthView('view-register')">Crear cuenta nueva</button>
+                    </form>
+                    <div class="auth-links">
+                        <a href="#">¿Olvidaste tu contraseña?</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VISTA: REGISTRO DE USUARIO -->
+        <div id="view-register" class="auth-container" style="display:none;">
+            <div class="auth-card">
+                <div class="auth-left">
+                    <div class="logo">💰 FinanzasApp</div>
+                    <h2>Comienza a trazar tus metas hoy mismo.</h2>
+                </div>
+                <div class="auth-right">
+                    <h3 style="margin-bottom: 20px; font-size: 22px;">Registro de Usuario</h3>
+                    <form id="form-register" onsubmit="event.preventDefault(); authLogin();">
+                        <div class="form-group">
+                            <label>Nombre completo</label>
+                            <input type="text" class="form-control" placeholder="Juan Pérez" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Correo electrónico</label>
+                            <input type="email" class="form-control" placeholder="correo@cucei.com" required>
+                        </div>
+                        <div class="grid-2" style="gap: 10px; margin-bottom: 0;">
+                            <div class="form-group">
+                                <label>Contraseña</label>
+                                <input type="password" class="form-control" placeholder="••••••••" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Confirmar</label>
+                                <input type="password" class="form-control" placeholder="••••••••" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Nivel de conocimiento financiero</label>
+                            <select class="form-control" style="padding: 12px;">
+                                <option>Básico</option>
+                                <option>Intermedio</option>
+                                <option>Avanzado</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Registrarse</button>
+                        <button type="button" class="btn btn-secondary" onclick="switchAuthView('view-login')">Volver al Login</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- CONTENEDOR SPA NATIVO: APLICACIÓN CENTRAL   -->
+    <!-- ========================================== -->
+    <div id="main-application" class="page" style="width: 100vw; height: 100vh;">
+        <div class="app-layout">
+            
+            <!-- SIDEBAR MENÚ DE NAVEGACIÓN -->
+            <aside class="sidebar">
+                <div class="sidebar-brand">
+                    <span>💰 FinanzasApp</span>
+                </div>
+                <ul class="sidebar-menu">
+                    <li class="sidebar-item active" data-target="dashboard"><a href="#">📊 <span>Dashboard</span></a></li>
+                    <li class="sidebar-item" data-target="movimientos"><a href="#">💸 <span>Movimientos</span></a></li>
+                    <li class="sidebar-item" data-target="metas"><a href="#">🎯 <span>Metas</span></a></li>
+                    <li class="sidebar-item" data-target="reportes"><a href="#">📈 <span>Reportes</span></a></li>
+                    <li class="sidebar-item" data-target="educacion"><a href="#">🎓 <span>Educación</span></a></li>
+                    <li class="sidebar-item" data-target="comunidad"><a href="#">👥 <span>Comunidad</span></a></li>
+                    <li class="sidebar-item" data-target="alertas"><a href="#">🔔 <span>Alertas</span></a></li>
+                    <li class="sidebar-item" data-target="resumen"><a href="#">📅 <span>Resumen Anual</span></a></li>
+                    <li class="sidebar-item" data-target="perfil"><a href="#">👤 <span>Mi Perfil</span></a></li>
+                </ul>
+                <div style="margin-top: auto;">
+                    <button class="btn btn-secondary" style="background: rgba(239, 68, 68, 0.2); color: #EF4444;" onclick="logout()">Cerrar Sesión</button>
+                </div>
+            </aside>
+
+            <!-- WORKSPACE INTERNO -->
+            <div class="main-wrapper">
+                
+                <!-- NAVBAR SUPERIOR COHESIVO -->
+                <header class="navbar">
+                    <div class="search-box">
+                        <input type="text" placeholder="Buscar movimientos, guías...">
+                    </div>
+                    <div class="nav-profile">
+                        <div class="notification-bell" onclick="navigateToSection('alertas')">
+                            🔔 <span class="notification-badge"></span>
+                        </div>
+                        <div class="user-avatar" id="avatar-label">U</div>
+                        <span style="font-weight: 500; font-size: 14px;" id="username-label">Usuario Demo</span>
+                    </div>
+                </header>
+
+                <!-- ÁREA DE CONTENIDO DINÁMICO SPA -->
+                <main class="content-body">
+
+                    <!-- SECCIÓN 3: DASHBOARD PRINCIPAL -->
+                    <section id="sec-dashboard" class="view-section active">
+                        <h2 class="font-poppins">Resumen General</h2>
+                        <div class="grid-4">
+                            <div class="card kpi-card">
+                                <span class="kpi-label">Balance Total</span>
+                                <span class="kpi-value" id="dash-balance">$24,500.00</span>
+                                <span class="kpi-indicator indicator-positive">Activo Estable</span>
+                            </div>
+                            <div class="card kpi-card">
+                                <span class="kpi-label">Ingresos del Mes</span>
+                                <span class="kpi-value" style="color: var(--success);" id="dash-ingresos">$32,000.00</span>
+                                <span class="kpi-indicator indicator-positive">+12% vs mes ant.</span>
+                            </div>
+                            <div class="card kpi-card">
+                                <span class="kpi-label">Gastos del Mes</span>
+                                <span class="kpi-value" style="color: var(--danger);" id="dash-gastos">$7,500.00</span>
+                                <span class="kpi-indicator indicator-negative">Dentro del límite</span>
+                            </div>
+                            <div class="card kpi-card">
+                                <span class="kpi-label">Ahorro Proyectado</span>
+                                <span class="kpi-value" style="color: var(--warning);">$4,500.00</span>
+                                <span class="kpi-indicator indicator-neutral">85% Completado</span>
+                            </div>
+                        </div>
+
+                        <div class="grid-2">
+                            <div class="card">
+                                <h3 class="font-poppins" style="margin-bottom: 15px;">Evolución Mensual Corta</h3>
+                                <div class="mock-chart-container">
+                                    <div class="mock-bar" style="height: 40%;" data-value="Ene"></div>
+                                    <div class="mock-bar" style="height: 55%;" data-value="Feb"></div>
+                                    <div class="mock-bar" style="height: 70%;" data-value="Mar"></div>
+                                    <div class="mock-bar" style="height: 60%;" data-value="Abr"></div>
+                                    <div class="mock-bar" style="height: 85%;" data-value="May"></div>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <h3 class="font-poppins" style="margin-bottom: 15px;">Últimos Movimientos Activos</h3>
+                                <div class="list-container" id="dash-mini-movimientos">
+                                    <!-- Inyección dinámica -->
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECCIÓN 4: REGISTRAR MOVIMIENTO -->
+                    <section id="sec-movimientos" class="view-section">
+                        <h2 class="font-poppins">Gestión de Transacciones</h2>
+                        <div class="grid-2">
+                            <div class="card">
+                                <h3 style="margin-bottom: 20px;">Registrar Flujo Financiero</h3>
+                                <form id="form-movimiento" onsubmit="event.preventDefault(); agregarMovimiento();">
+                                    <div class="form-group">
+                                        <label>Tipo de Operación</label>
+                                        <select class="form-control" id="mov-tipo">
+                                            <option value="Ingreso">📈 Ingreso (Entrada de Capital)</option>
+                                            <option value="Gasto">📉 Gasto (Salida / Consumo)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Monto ($ MXN)</label>
+                                        <input type="number" class="form-control" id="mov-monto" placeholder="0.00" required step="0.01">
+                                    </div>
+                                    <div class="grid-2" style="gap:15px; margin-bottom: 0;">
+                                        <div class="form-group">
+                                            <label>Categoría</label>
+                                            <select class="form-control" id="mov-cat">
+                                                <option>Comida</option>
+                                                <option>Transporte</option>
+                                                <option>Servicios</option>
+                                                <option>Salud</option>
+                                                <option>Entretenimiento</option>
+                                                <option>Educación</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Método de Pago</label>
+                                            <select class="form-control" id="mov-metodo">
+                                                <option>Efectivo</option>
+                                                <option>Tarjeta de Crédito</option>
+                                                <option>Tarjeta de Débito</option>
+                                                <option>Transferencia</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Descripción Breve</label>
+                                        <input type="text" class="form-control" id="mov-desc" placeholder="Concepto del movimiento" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Guardar Transacción</button>
+                                </form>
+                            </div>
+                            <div class="card">
+                                <h3 style="margin-bottom: 20px;">Libro de Contabilidad Completo</h3>
+                                <div class="list-container" id="registro-completo-movimientos">
+                                    <!-- Inyección dinámica -->
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECCIÓN 5: METAS DE AHORRO -->
+                    <section id="sec-metas" class="view-section">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h2 class="font-poppins">Metas Financieras Proactivas</h2>
+                            <button class="btn btn-primary" style="width:auto; padding: 10px 20px;" onclick="crearMetaSimulada()">+ Crear nueva meta</button>
+                        </div>
+                        <div class="grid-2" id="contenedor-metas">
+                            <div class="card">
+                                <h3 class="font-poppins">Fondo de Emergencias</h3>
+                                <span style="font-size: 13px; color: var(--text-secondary);">Objetivo: $15,000.00 | Límite: Dic 2026</span>
+                                <div class="progress-wrapper">
+                                    <div class="progress-info">
+                                        <span>Progreso Acumulado</span>
+                                        <strong>75%</strong>
+                                    </div>
+                                    <div class="progress-bar-bg">
+                                        <div class="progress-bar-fill" style="width: 75%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <h3 class="font-poppins">Curso de Especialización Software</h3>
+                                <span style="font-size: 13px; color: var(--text-secondary);">Objetivo: $5,000.00 | Límite: Ago 2026</span>
+                                <div class="progress-wrapper">
+                                    <div class="progress-info">
+                                        <span>Progreso Acumulado</span>
+                                        <strong>40%</strong>
+                                    </div>
+                                    <div class="progress-bar-bg">
+                                        <div class="progress-bar-fill" style="width: 40%; background-color: var(--primary);"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECCIÓN 6: REPORTES FINANCIEROS -->
+                    <section id="sec-reportes" class="view-section">
+                        <h2 class="font-poppins">Análisis y Auditoría de Datos</h2>
+                        <div class="card">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+                                <h3>Distribución de Gastos por Categoría</h3>
+                                <div style="display:flex; gap:10px;">
+                                    <span style="padding:6px 12px; background:#E2E8F0; border-radius:15px; font-size:12px; cursor:pointer;">Semanal</span>
+                                    <span style="padding:6px 12px; background:var(--primary); color:white; border-radius:15px; font-size:12px; cursor:pointer;">Mensual</span>
+                                    <span style="padding:6px 12px; background:#E2E8F0; border-radius:15px; font-size:12px; cursor:pointer;">Anual</span>
+                                </div>
+                            </div>
+                            <div class="mock-chart-container" style="height: 250px;">
+                                <div class="mock-bar" style="height: 85%;" data-value="Comida (45%)"></div>
+                                <div class="mock-bar mock-bar-secondary" style="height: 35%;" data-value="Servicios (15%)"></div>
+                                <div class="mock-bar" style="height: 25%;" data-value="Transp. (10%)"></div>
+                                <div class="mock-bar mock-bar-secondary" style="height: 50%;" data-value="Salud (20%)"></div>
+                                <div class="mock-bar" style="height: 15%;" data-value="Ocio (10%)"></div>
+                            </div>
+                            <div class="grid-4" style="margin-top:24px;">
+                                <div style="text-align:center;">
+                                    <span style="font-size:12px; color:var(--text-secondary);">Mayor Gasto</span>
+                                    <h4 style="font-size:18px; color:var(--danger);">Alimentos ($3,375)</h4>
+                                </div>
+                                <div style="text-align:center;">
+                                    <span style="font-size:12px; color:var(--text-secondary);">Categoría Dominante</span>
+                                    <h4 style="font-size:18px;">Canasta Básica</h4>
+                                </div>
+                                <div style="text-align:center;">
+                                    <span style="font-size:12px; color:var(--text-secondary);">Tasa de Ahorro</span>
+                                    <h4 style="font-size:18px; color:var(--success);">32.4%</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECCIÓN 7: EDUCACIÓN FINANCIERA -->
+                    <section id="sec-educacion" class="view-section">
+                        <h2 class="font-poppins">Academia de Salud Financiera</h2>
+                        <div class="edu-grid">
+                            <div class="card edu-card">
+                                <div>
+                                    <div class="edu-banner">📊</div>
+                                    <h3 style="font-size:16px; margin-bottom:8px;">Regla del 50/30/20</h3>
+                                    <p style="font-size:13px; color:var(--text-secondary);">Aprende a estructurar tus ingresos en Necesidades, Deseos y Ahorro Inmediato.</p>
+                                </div>
+                                <button class="btn btn-secondary" style="font-size:12px; padding:8px; margin-top:15px;">Estudiar Módulo</button>
+                            </div>
+                            <div class="card edu-card">
+                                <div>
+                                    <div class="edu-banner">🛡️</div>
+                                    <h3 style="font-size:16px; margin-bottom:8px;">Control de Deudas Extrema</h3>
+                                    <p style="font-size:13px; color:var(--text-secondary);">Estrategias efectivas bola de nieve y avalancha para liquidar pasivos rápido.</p>
+                                </div>
+                                <button class="btn btn-secondary" style="font-size:12px; padding:8px; margin-top:15px;">Estudiar Módulo</button>
+                            </div>
+                            <div class="card edu-card">
+                                <div>
+                                    <div class="edu-banner">🚀</div>
+                                    <h3 style="font-size:16px; margin-bottom:8px;">Inversiones Básicas Cetes</h3>
+                                    <p style="font-size:13px; color:var(--text-secondary);">Cómo proteger tu dinero de la devaluación usando herramientas de bajo riesgo.</p>
+                                </div>
+                                <button class="btn btn-secondary" style="font-size:12px; padding:8px; margin-top:15px;">Estudiar Módulo</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECCIÓN 8: COMUNIDAD DIGITAL -->
+                    <section id="sec-comunidad" class="view-section">
+                        <h2 class="font-poppins">Foro y Desafíos de Comunidad</h2>
+                        <div class="grid-2">
+                            <div class="card">
+                                <h3 style="margin-bottom:15px;">Hilos de Discusión Activos</h3>
+                                <div class="post-card">
+                                    <div class="post-header">
+                                        <div class="user-avatar" style="width:30px; height:30px; font-size:11px;">AM</div>
+                                        <strong>Alejandro M.</strong>
+                                        <span style="font-size:11px; color:var(--text-muted);">Hace 2 horas</span>
+                                    </div>
+                                    <p style="font-size:13px; color:var(--text-secondary);">¿Alguien ha probado invertir en Socaps este mes? Tienen tasas interesantes del 11% anual.</p>
+                                </div>
+                                <div class="post-card">
+                                    <div class="post-header">
+                                        <div class="user-avatar" style="width:30px; height:30px; font-size:11px; background:#10B981;">SP</div>
+                                        <strong>Sofía P.</strong>
+                                        <span style="font-size:11px; color:var(--text-muted);">Hace 1 día</span>
+                                    </div>
+                                    <p style="font-size:13px; color:var(--text-secondary);">¡Logré mi primera meta de ahorro! Reducir las salidas por apps de comida fue clave.</p>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <h3 style="margin-bottom:15px;">Retos Colectivos Financieros</h3>
+                                <div style="background:var(--background); padding:16px; border-radius:var(--radius-sm); margin-bottom:12px;">
+                                    <h4 style="font-size:14px; margin-bottom:4px;">🎯 Fin de Semana Cero Gastos</h4>
+                                    <p style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">Pasa sábado y domingo consumiendo solo lo que tienes en casa.</p>
+                                    <span class="kpi-indicator indicator-neutral">340 Usuarios Participando</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECCIÓN 9: ALERTAS INTELIGENTES -->
+                    <section id="sec-alertas" class="view-section">
+                        <h2 class="font-poppins">Notificaciones de Salud Financiera</h2>
+                        <div class="card" id="contenedor-alertas-centro">
+                            <div class="alert-toast alert-yellow">
+                                <div>⚠️</div>
+                                <div>
+                                    <strong>Aproximación al Límite de Presupuesto</strong>
+                                    <p style="font-size:12px; opacity:0.9;">Has consumido el 82% del presupuesto asignado a Entretenimiento.</p>
+                                </div>
+                            </div>
+                            <div class="alert-toast alert-green">
+                                <div>✅</div>
+                                <div>
+                                    <strong>Fondo de Emergencias Incrementado</strong>
+                                    <p style="font-size:12px; opacity:0.9;">Tu transferencia automática se procesó con éxito.</p>
+                                </div>
+                            </div>
+                            <div class="alert-toast alert-red">
+                                <div>🚨</div>
+                                <div>
+                                    <strong>Alerta de Gasto Crítico Detectado</strong>
+                                    <p style="font-size:12px; opacity:0.9;">Se registró un pago inusual bajo la categoría 'Servicios' que excede el promedio.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECCIÓN 10: RESUMEN ANUAL -->
+                    <section id="sec-resumen" class="view-section">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h2 class="font-poppins">Estado del Ejercicio Financiero Anual</h2>
+                            <button class="btn btn-primary" style="width:auto; padding:10px 20px;" onclick="alert('Simulación: Descargando PDF del Reporte...')">📥 Exportar Reporte Anual PDF</button>
+                        </div>
+                        <div class="card">
+                            <div class="grid-4" style="margin-bottom: 24px;">
+                                <div>
+                                    <span style="font-size:12px; color:var(--text-secondary);">Total Ahorrado General</span>
+                                    <h3>$54,200.00</h3>
+                                </div>
+                                <div>
+                                    <span style="font-size:12px; color:var(--text-secondary);">Total Consumos Brutos</span>
+                                    <h3>$91,400.00</h3>
+                                </div>
+                                <div>
+                                    <span style="font-size:12px; color:var(--text-secondary);">Mes más Crítico</span>
+                                    <h3 style="color:var(--danger);">Diciembre</h3>
+                                </div>
+                                <div>
+                                    <span style="font-size:12px; color:var(--text-secondary);">Score de Salud</span>
+                                    <h3 style="color:var(--success);">92 / 100</h3>
+                                </div>
+                            </div>
+                            <div class="mock-chart-container" style="height: 200px;">
+                                <div class="mock-bar" style="height: 45%;" data-value="2025"></div>
+                                <div class="mock-bar" style="height: 85%;" data-value="2026 (Actual)"></div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECCIÓN 11: PERFIL DE USUARIO -->
+                    <section id="sec-perfil" class="view-section">
+                        <h2 class="font-poppins">Configuración del Perfil</h2>
+                        <div class="card grid-2">
+                            <div>
+                                <h3 style="margin-bottom:15px;">Información de Cuenta</h3>
+                                <div class="form-group">
+                                    <label>Nombre de Usuario</label>
+                                    <input type="text" class="form-control" value="Usuario de Pruebas Académicas" id="perf-name" oninput="sincronizarNombre()">
+                                </div>
+                                <div class="form-group">
+                                    <label>Correo Asociado</label>
+                                    <input type="email" class="form-control" value="demo@cucei.com" readonly style="cursor:not-allowed;">
+                                </div>
+                            </div>
+                            <div>
+                                <h3 style="margin-bottom:15px;">Preferencia del Sistema</h3>
+                                <div class="form-group">
+                                    <label>Moneda Base</label>
+                                    <select class="form-control"><option>MXN - Peso Mexicano</option><option>USD - Dólar Americano</option></select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Seguridad de la Cuenta</label>
+                                    <button class="btn btn-secondary" type="button" style="text-align:left; justify-content:flex-start;">Configurar Doble Factor (MFA)</button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MOTOR LOGIC DE INTERACCIÓN (JAVASCRIPT)     -->
+    <!-- ========================================== -->
+    <script>
+        // --- BASE DE DATOS VOLÁTIL EN MEMORIA ---
+        let baseMovimientos = [
+            { tipo: 'Ingreso', monto: 25000, cat: 'Sueldo', metodo: 'Transferencia', desc: 'Nómina Quincenal Académica' },
+            { tipo: 'Gasto', monto: 450, cat: 'Comida', metodo: 'Efectivo', desc: 'Almuerzo Cafetería' },
+            { tipo: 'Gasto', monto: 1200, cat: 'Servicios', metodo: 'Tarjeta de Débito', desc: 'Pago de Internet' },
+            { tipo: 'Ingreso', monto: 7000, cat: 'Proyecto', metodo: 'Transferencia', desc: 'Desarrollo Web Freelance' }
+        ];
+
+        // --- MANEJO DE VISTAS SPA ---
+        function switchAuthView(viewId) {
+            document.getElementById('view-login').style.display = 'none';
+            document.getElementById('view-register').style.display = 'none';
+            document.getElementById(viewId).style.display = 'flex';
+        }
+
+        function authLogin() {
+            document.getElementById('auth-flow').classList.remove('active');
+            document.getElementById('main-application').classList.add('active');
+            inicializarApp();
+        }
+
+        function logout() {
+            document.getElementById('main-application').classList.remove('active');
+            document.getElementById('auth-flow').classList.add('active');
+        }
+
+        // --- NAVEGACIÓN INTERNA MÓDULOS ---
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+                
+                let target = this.getAttribute('data-target');
+                navigateToSection(target);
+            });
+        });
+
+        function navigateToSection(targetId) {
+            document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+            const targetSection = document.getElementById(`sec-${targetId}`);
+            if(targetSection) {
+                targetSection.classList.add('active');
+            }
+            
+            // Actualizar estado del menú por si se navega de forma cruzada programática
+            document.querySelectorAll('.sidebar-item').forEach(i => {
+                if(i.getAttribute('data-target') === targetId) {
+                    document.querySelectorAll('.sidebar-item').forEach(x => x.classList.remove('active'));
+                    i.classList.add('active');
+                }
+            });
+        }
+
+        // --- LOGICA DE NEGOCIO SIMULADA ---
+        function inicializarApp() {
+            renderizarMovimientos();
+            calcularBalances();
+        }
+
+        function calcularBalances() {
+            let ingresos = 0;
+            let gastos = 0;
+            
+            baseMovimientos.forEach(m => {
+                if(m.tipo === 'Ingreso') ingresos += m.monto;
+                else gastos += m.monto;
+            });
+
+            let balance = ingresos - gastos;
+
+            // Inyección en interfaz
+            document.getElementById('dash-balance').innerText = `$${balance.toLocaleString('en-US', {minimumFractionDigits:2})}`;
+            document.getElementById('dash-ingresos').innerText = `$${ingresos.toLocaleString('en-US', {minimumFractionDigits:2})}`;
+            document.getElementById('dash-gastos').innerText = `$${gastos.toLocaleString('en-US', {minimumFractionDigits:2})}`;
+        }
+
+        function renderizarMovimientos() {
+            const containerMini = document.getElementById('dash-mini-movimientos');
+            const containerCompleto = document.getElementById('registro-completo-movimientos');
+            
+            containerMini.innerHTML = '';
+            containerCompleto.innerHTML = '';
+
+            baseMovimientos.forEach((m, index) => {
+                let html = `
+                    <div class="list-row" style="border-left-color: ${m.tipo === 'Ingreso' ? 'var(--success)' : 'var(--danger)'}">
+                        <div>
+                            <strong>${m.desc}</strong>
+                            <div style="font-size:11px; color:var(--text-secondary);">${m.cat} • ${m.metodo}</div>
+                        </div>
+                        <span style="font-weight:700; color: ${m.tipo === 'Ingreso' ? 'var(--success)' : 'var(--danger)'}">
+                            ${m.tipo === 'Ingreso' ? '+' : '-'}$${m.monto.toLocaleString('en-US')}
+                        </span>
+                    </div>
+                `;
+                containerCompleto.innerHTML += html;
+                if(index < 3) { // Solo meter los últimos 3 en el mini dashboard
+                    containerMini.innerHTML += html;
+                }
+            });
+        }
+
+        function agregarMovimiento() {
+            const tipo = document.getElementById('mov-tipo').value;
+            const monto = parseFloat(document.getElementById('mov-monto').value);
+            const cat = document.getElementById('mov-cat').value;
+            const metodo = document.getElementById('mov-metodo').value;
+            const desc = document.getElementById('mov-desc').value;
+
+            if(!monto || !desc) return;
+
+            baseMovimientos.unshift({ tipo, monto, cat, metodo, desc });
+            
+            // Feedback Limpieza e Inicialización
+            document.getElementById('mov-monto').value = '';
+            document.getElementById('mov-desc').value = '';
+            
+            inicializarApp();
+            alert('¡Transacción agregada con éxito a la memoria de la maqueta!');
+        }
+
+        function crearMetaSimulada() {
+            const metaContainer = document.getElementById('contenedor-metas');
+            let nuevaMetaHtml = `
+                <div class="card" style="animation: fadeIn 0.4s ease forwards;">
+                    <h3 class="font-poppins">Meta de Ahorro Programada</h3>
+                    <span style="font-size: 13px; color: var(--text-secondary);">Objetivo: $10,000.00 | Límite: Inmediato</span>
+                    <div class="progress-wrapper">
+                        <div class="progress-info">
+                            <span>Progreso Acumulado</span>
+                            <strong>10%</strong>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" style="width: 10%; background-color: var(--warning);"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            metaContainer.innerHTML += nuevaMetaHtml;
+        }
+
+        function sincronizarNombre() {
+            const nombre = document.getElementById('perf-name').value;
+            document.getElementById('username-label').innerText = nombre;
+            document.getElementById('avatar-label').innerText = nombre.charAt(0).toUpperCase();
+        }
+    </script>
+</body>
+</html>
